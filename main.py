@@ -19,7 +19,7 @@ def download():
     print(f"Received request: URL={url}, Quality={quality}", flush=True)
 
     try:
-            yt = YouTube(url)
+            yt = YouTube(url, use_po_token=True)
 
             if format == 'video':
                 stream = yt.streams.filter(res=quality, progressive=True, file_extension="mp4").first()
