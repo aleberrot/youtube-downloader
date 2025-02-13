@@ -3,6 +3,7 @@ from flask import Flask, request, jsonify, send_file
 import yt_dlp
 from flask_cors import CORS
 import base64
+import mimetypes
 
 app = Flask(__name__)
 CORS(app)
@@ -53,8 +54,9 @@ def download():
 
         print(f"File downloaded to: {file_path}", flush=True)
 
+        mime_type, _ = mimetypes.guess_type(file_path)
         # Send the file back to the client
-        return send_file(file_path, as_attachment=True)
+        return send_file(file_path, as_attachment=True, mimetype=mime_type)
     except Exception as e:
         print(f"Download error: {str(e)}", flush=True)
         return jsonify({"error": f"Download failed: {str(e)}"}), 500
