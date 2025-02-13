@@ -11,6 +11,8 @@ cookies_base64 = os.getenv("COOKIES_BASE64")
 if cookies_base64:
     with open("/tmp/cookies.txt", "wb") as f:
         f.write(base64.b64decode(cookies_base64))
+else:
+    print("Warning: No cookies found. Some videos may not be downloadable.", flush=True)
 
 @app.route('/download', methods=['POST'])
 def download():
@@ -18,6 +20,7 @@ def download():
     url = data.get('url')
     format = data.get('format')
     quality = data.get('quality')
+    print("Checking if cookies.txt exists:", os.path.exists("/tmp/cookies.txt"), flush=True)
 
     if not url:
         return jsonify({"error": "No URL provided"}), 400
@@ -31,7 +34,7 @@ def download():
     # Configure yt-dlp options
     ydl_opts = {
         "outtmpl": f"{download_path}/%(title)s.%(ext)s",
-        "cookies": "/tmp/cookies.txt",
+        "cookiefile": "/tmp/cookies.txt",
     }
 
     # Adjust options based on format and quality
