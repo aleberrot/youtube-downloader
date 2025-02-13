@@ -2,9 +2,15 @@ import os
 from flask import Flask, request, jsonify, send_file
 import yt_dlp
 from flask_cors import CORS
+import base64
 
 app = Flask(__name__)
 CORS(app)
+
+cookies_base64 = os.getenv("COOKIES_BASE64")
+if cookies_base64:
+    with open("/tmp/cookies.txt", "wb") as f:
+        f.write(base64.b64decode(cookies_base64))
 
 @app.route('/download', methods=['POST'])
 def download():
@@ -25,6 +31,7 @@ def download():
     # Configure yt-dlp options
     ydl_opts = {
         "outtmpl": f"{download_path}/%(title)s.%(ext)s",
+        "cookies": "/tmp/cookies.txt",
     }
 
     # Adjust options based on format and quality
