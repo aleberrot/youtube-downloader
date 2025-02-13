@@ -16,7 +16,7 @@ def download():
     if not url:
         return jsonify({"error": "No url provided"}), 400
 
-    app.logger.info(f"Received request: URL={url}, Quality={quality}")
+    print(f"Received request: URL={url}, Quality={quality}", flush=True)
 
     try:
             yt = YouTube(url)
@@ -37,17 +37,17 @@ def download():
             os.makedirs(download_path, exist_ok=True)  # exist_ok prevents errors if dir exists
 
             file_path = stream.download(output_path=download_path)
-            app.logger.info(f"File downloaded to: {file_path}") # Log the full path
+            print(f"File downloaded to: {file_path}", flush=True) # Log the full path
 
             # Crucial: Add mimetype and handle potential errors during send_file
             try:
                 return send_file(file_path, as_attachment=True, mimetype=stream.mime_type)
             except Exception as e:
-                app.logger.info(f"Error sending file: {e}")
+                print(f"Error sending file: {e}", flush=True)
                 return jsonify({"error": "Error sending file"}), 500
 
     except Exception as e:
-        app.logger.info(f"Download error: {str(e)}") # Log the error for debugging
+        print(f"Download error: {str(e)}", flush=True) # Log the error for debugging
         return jsonify({"error": f"Download failed: {str(e)}"}), 500
 
 
