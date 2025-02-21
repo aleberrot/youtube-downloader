@@ -64,7 +64,7 @@ def download():
 
         file_url = f"{request.host_url}static/{file_path}"
         print(file_url, flush=True)
-        return jsonify({"file_url":file_url})
+        return jsonify({"fileUrl":file_url})
     except Exception as e:
         print(f"Download error: {str(e)}", flush=True)
         return jsonify({"error": f"Download failed: {str(e)}"}), 500
