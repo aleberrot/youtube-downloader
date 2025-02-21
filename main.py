@@ -1,5 +1,5 @@
 import os
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, jsonify, send_file, send_from_directory
 import yt_dlp
 from flask_cors import CORS
 import base64
@@ -7,6 +7,10 @@ import mimetypes
 
 app = Flask(__name__)
 CORS(app)
+
+DOWNLOAD_FOLDER = os.path.join(os.getcwd(), "static")
+os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)
+app.config["DOWNLOAD_FOLDER"] = DOWNLOAD_FOLDER
 
 cookies_base64 = os.getenv("COOKIES_BASE64")
 if cookies_base64:
@@ -54,13 +58,19 @@ def download():
 
         print(f"File downloaded to: {file_path}", flush=True)
 
-        mime_type, _ = mimetypes.guess_type(file_path)
+        #mime_type, _ = mimetypes.guess_type(file_path)
         # Send the file back to the client
-        return send_file(file_path, as_attachment=True, mimetype=mime_type)
+        #return send_file(file_path, as_attachment=True, mimetype=mime_type)
+
+        file_url = f"{request.host_url}static/{file_path}"
+        return jsonify({"file_url":file_url})
     except Exception as e:
         print(f"Download error: {str(e)}", flush=True)
         return jsonify({"error": f"Download failed: {str(e)}"}), 500
 
+@app.route("/static/<filename>")
+def serve_file(filename):
+    return send_from_directory(DOWNLOAD_FOLDER, filename, as_attachment=True)
 
 if __name__ == '__main__':
     app.run(debug=True)
