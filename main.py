@@ -66,7 +66,7 @@ def download():
         #return send_file(file_path, as_attachment=True, mimetype=mime_type)
 
         #file_url = f"{request.host_url}static/{file_path}"
-        file_url = f"{request.host_url}static/{file_name}"
+        file_url = f"{request.host_url}static/{file_name}.mp4"
         print(file_url, flush=True)
         return jsonify({"fileUrl":file_url,
                         "fileName":file_name})
