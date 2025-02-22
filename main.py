@@ -4,6 +4,7 @@ import yt_dlp
 from flask_cors import CORS
 import base64
 import mimetypes
+import urllib.parse
 
 app = Flask(__name__)
 CORS(app)
@@ -66,7 +67,7 @@ def download():
         #return send_file(file_path, as_attachment=True, mimetype=mime_type)
 
         #file_url = f"{request.host_url}static/{file_path}"
-        file_url = f"{request.host_url}static/{file_name}.mp4"
+        file_url = f"{request.host_url}static/{urllib.parse.quote(file_name)}"
         print(file_url, flush=True)
         return jsonify({"fileUrl":file_url,
                         "fileName":file_name})
@@ -74,7 +75,7 @@ def download():
         print(f"Download error: {str(e)}", flush=True)
         return jsonify({"error": f"Download failed: {str(e)}"}), 500
 
-@app.route("/static/<filename>")
+@app.route("/static/<path:filename>")
 def serve_file(filename):
     return send_from_directory(DOWNLOAD_FOLDER, filename, as_attachment=True)
 
