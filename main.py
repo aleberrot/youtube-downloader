@@ -46,6 +46,8 @@ def download():
     if format == "audio":
         ydl_opts["format"] = "bestaudio/best"
         ydl_opts["postprocessors"] = [{"key": "FFmpegExtractAudio", "preferredcodec": "mp3"}]
+        ydl_opts["postprocessors_args"] = ["-vn"]
+        ydl_opts["noplaylist"] = True
     elif format == "video":
         ydl_opts["format"] = f"best[height={quality}]/best"
 
@@ -64,7 +66,8 @@ def download():
 
         file_url = f"{request.host_url}static/{file_path}"
         print(file_url, flush=True)
-        return jsonify({"fileUrl":file_url})
+        return jsonify({"fileUrl":file_url,
+                        "fileName":file_name})
     except Exception as e:
         print(f"Download error: {str(e)}", flush=True)
         return jsonify({"error": f"Download failed: {str(e)}"}), 500
