@@ -50,6 +50,7 @@ def download():
         ydl_opts["postprocessors"] = [{"key": "FFmpegExtractAudio", "preferredcodec": "mp3"}]
         ydl_opts["postprocessors_args"] = ["-vn"]
         ydl_opts["noplaylist"] = True
+        ydl_opts["keepVideo"] = False
     elif format == "video":
         ydl_opts["format"] = f"best[height={quality}]/best"
 
