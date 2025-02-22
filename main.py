@@ -33,7 +33,8 @@ def download():
     print(f"Received request: URL={url}, Quality={quality}", flush=True)
 
     # Set up the download path
-    download_path = os.path.join(os.path.expanduser("~"), "downloads")
+    #download_path = os.path.join(os.path.expanduser("~"), "downloads")
+    download_path = DOWNLOAD_FOLDER
     os.makedirs(download_path, exist_ok=True)  # Ensure directory exists
 
     # Configure yt-dlp options
@@ -64,7 +65,8 @@ def download():
         # Send the file back to the client
         #return send_file(file_path, as_attachment=True, mimetype=mime_type)
 
-        file_url = f"{request.host_url}static/{file_path}"
+        #file_url = f"{request.host_url}static/{file_path}"
+        file_url = f"{request.host_url}static/{file_name}"
         print(file_url, flush=True)
         return jsonify({"fileUrl":file_url,
                         "fileName":file_name})
