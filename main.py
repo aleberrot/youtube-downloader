@@ -1,10 +1,11 @@
 import os
-from flask import Flask, request, jsonify, send_file, send_from_directory
+from flask import Flask, request, jsonify, send_from_directory, after_this_request
 import yt_dlp
 from flask_cors import CORS
 import base64
-import mimetypes
 import urllib.parse
+import time
+import threading
 
 app = Flask(__name__)
 CORS(app)
@@ -32,9 +33,47 @@ def download():
         return jsonify({"error": "No URL provided"}), 400
 
     print(f"Received request: URL={url}, Quality={quality}", flush=True)
+    def send_response(file_name):
+        file_url = f"{request.host_url}static/{urllib.parse.quote(file_name)}"
+        print(f"File available at: {file_url}")
+        response = jsonify({"fileUrl": file_url, "fileName": file_name})
+        return response
 
-    # Set up the download path
-    #download_path = os.path.join(os.path.expanduser("~"), "downloads")
+    thread = threading.Thread(target=download_video, args=(url, quality, format, send_response))
+    thread.start()
+
+    return jsonify({"message": "Download started"}), 202
+
+
+@app.route("/static/<path:filename>")
+def serve_file(filename):
+    """Serve a file from the download directory and delete it after sending it"""
+
+    file_path = os.path.join(DOWNLOAD_FOLDER, filename)
+    # Clean up the downloaded file after serving
+    @after_this_request
+    def cleanup(response):
+        try:
+            os.remove(file_path)
+            print(f"Removed file: {file_path}", flush=True)
+        except Exception as e:
+            print(f"Error removing file: {str(e)}", flush=True)
+        return response
+
+    return send_from_directory(DOWNLOAD_FOLDER, filename, as_attachment=True)
+
+@app.route('/')
+def index():
+    return "Hello, World!"
+
+
+@app.route('/status', methods=['GET'])
+def status():
+    """Check the status of a download"""
+
+def download_video(url, quality, format, callback):
+    """Download the video asynchronously"""
+     # Set up the download path
     download_path = DOWNLOAD_FOLDER
     os.makedirs(download_path, exist_ok=True)  # Ensure directory exists
 
@@ -61,24 +100,11 @@ def download():
             file_name = f"{info['title']}.{file_ext}"
             file_path = os.path.join(download_path, file_name)
 
-        print(f"File downloaded to: {file_path}", flush=True)
 
-        #mime_type, _ = mimetypes.guess_type(file_path)
-        # Send the file back to the client
-        #return send_file(file_path, as_attachment=True, mimetype=mime_type)
-
-        #file_url = f"{request.host_url}static/{file_path}"
-        file_url = f"{request.host_url}static/{urllib.parse.quote(file_name)}"
-        print(file_url, flush=True)
-        return jsonify({"fileUrl":file_url,
-                        "fileName":file_name})
+        callback(file_name)
     except Exception as e:
         print(f"Download error: {str(e)}", flush=True)
-        return jsonify({"error": f"Download failed: {str(e)}"}), 500
 
-@app.route("/static/<path:filename>")
-def serve_file(filename):
-    return send_from_directory(DOWNLOAD_FOLDER, filename, as_attachment=True)
 
 if __name__ == '__main__':
     app.run(debug=True)
